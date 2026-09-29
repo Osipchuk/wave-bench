@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coastal Flood Lab</title>
+<style>
+:root{
+  --bg:#0b1118; --panel:rgba(13,19,27,.82); --panel-b:rgba(255,255,255,.09); --ink:#e8eef5; --mut:#8fa2b5; --dim:#5f7286;
+  --acc:#38bdf8; --acc2:#0ea5e9; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --r:12px;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+#ui{position:fixed;inset:0;pointer-events:none}
+.panel{pointer-events:auto;background:var(--panel);border:1px solid var(--panel-b);border-radius:var(--r);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.35);padding:12px}
+h3{margin:0 0 8px;font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--mut);font-weight:700}
+button{font:inherit;color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+#left{position:absolute;left:14px;top:14px;width:246px;max-height:calc(100% - 28px);overflow:auto}
+#right{position:absolute;right:14px;top:14px;width:300px;display:flex;flex-direction:column;gap:10px;max-height:calc(100% - 28px)}
+#right .panel{flex:0 0 auto}
+#results{overflow:auto;min-height:0}
+
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--panel-b)}
+.brand svg{flex:0 0 auto}
+.brand b{display:block;font-size:14px;letter-spacing:.01em}
+.brand span{display:block;font-size:11px;color:var(--mut);margin-top:1px}
+
+#tools{display:grid;gap:6px}
+.tool{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--panel-b);border-radius:10px;padding:7px 9px;transition:background .15s,border-color .15s,transform .1s}
+.tool:hover:not(:disabled){background:rgba(255,255,255,.09)}
+.tool.active{border-color:var(--acc);background:rgba(56,189,248,.14);box-shadow:0 0 0 1px rgba(56,189,248,.35) inset}
+.tool:disabled{opacity:.4;cursor:not-allowed}
+.tool .ico{width:38px;height:30px;display:grid;place-items:center;border-radius:7px;background:rgba(0,0,0,.28)}
+.tool b{display:block;font-size:12.5px;font-weight:650}
+.tool small{display:block;font-size:10.5px;color:var(--mut);margin-top:1px;line-height:1.25}
+.tool kbd{font:600 10px/1 ui-monospace,Consolas,monospace;color:var(--dim);border:1px solid var(--panel-b);border-radius:4px;padding:2px 4px}
+.hint{font-size:11px;color:var(--mut);margin:8px 2px 0;line-height:1.4;min-height:30px}
+.hint.bad{color:var(--bad)} .hint.good{color:var(--ok)}
+#inspector{margin-top:10px;padding-top:10px;border-top:1px solid var(--panel-b)}
+#inspector .name{font-size:13px;font-weight:650;display:flex;justify-content:space-between;align-items:center}
+#inspector .name i{font-style:normal;font-size:10px;color:var(--acc);border:1px solid rgba(56,189,248,.5);border-radius:99px;padding:1px 7px}
+#inspector .sub{font-size:11px;color:var(--mut);margin:3px 0 8px}
+.hrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.hrow label{font-size:11px;color:var(--mut);flex:0 0 auto}
+.hrow output{font:600 12px ui-monospace,Consolas,monospace;min-width:38px;text-align:right}
+input[type=range]{flex:1;accent-color:var(--acc);min-width:0}
+.btnrow{display:flex;gap:6px;margin-top:8px}
+.btn{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--panel-b);border-radius:9px;padding:7px 8px;font-size:12px;font-weight:600;transition:background .15s,transform .1s}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.danger:hover:not(:disabled){background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.5)}
+.btn.small{flex:0 0 auto;padding:6px 10px}
+.lockmsg{display:none;margin-top:8px;font-size:11px;color:var(--warn);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:6px 8px;line-height:1.35}
+.locked .lockmsg{display:block}
+
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:rgba(0,0,0,.3);border:1px solid var(--panel-b);border-radius:9px;padding:3px;gap:3px}
+.seg button{background:transparent;border:0;border-radius:6px;padding:6px 4px;font-size:12px;font-weight:600;color:var(--mut);transition:background .15s,color .15s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--acc2);color:#04131d}
+.seg.intensity button.on[data-k=moderate]{background:#4ade80}
+.seg.intensity button.on[data-k=severe]{background:#fbbf24}
+.seg.intensity button.on[data-k=extreme]{background:#f87171}
+.lbl{font-size:11px;color:var(--mut);margin:10px 0 5px;display:flex;justify-content:space-between}
+#waveInfo{font-size:11px;color:var(--mut);margin:7px 1px 10px;display:flex;justify-content:space-between;align-items:center}
+.meter{display:flex;gap:3px}.meter i{width:14px;height:6px;border-radius:2px;background:rgba(255,255,255,.14)}.meter i.on{background:var(--acc)}
+.primary{width:100%;border:0;border-radius:11px;padding:13px 12px;font-size:15px;font-weight:750;letter-spacing:.02em;color:#04131d;background:linear-gradient(180deg,#5cd0ff,#1aa7e8);box-shadow:0 6px 18px rgba(14,165,233,.35),0 1px 0 rgba(255,255,255,.5) inset;display:flex;justify-content:center;align-items:center;gap:8px;transition:transform .1s,filter .15s,box-shadow .15s}
+.primary:hover:not(:disabled){filter:brightness(1.08);box-shadow:0 8px 24px rgba(14,165,233,.5),0 1px 0 rgba(255,255,255,.5) inset}
+.primary:active:not(:disabled){transform:translateY(1px)}
+.primary:disabled{filter:grayscale(.6) brightness(.7);cursor:not-allowed;box-shadow:none}
+.row2{display:grid;grid-template-columns:1fr 1.35fr;gap:6px;margin-top:8px}
+.switches{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.sw{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--panel-b);border-radius:9px;padding:7px 8px;font-size:12px;font-weight:600;cursor:pointer;user-select:none}
+.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw .knob{width:26px;height:15px;border-radius:99px;background:rgba(255,255,255,.18);position:relative;transition:background .15s;flex:0 0 auto}
+.sw .knob:after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked+.knob{background:var(--acc2)}.sw input:checked+.knob:after{transform:translateX(11px)}
+.sw:has(input:focus-visible){outline:2px solid var(--acc)}
+
+.rhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.rhead h3{margin:0}
+.pill{font-size:11px;font-weight:700;border-radius:99px;padding:3px 9px;background:rgba(255,255,255,.08);color:var(--mut);white-space:nowrap}
+.pill.run{background:rgba(56,189,248,.18);color:#7dd3fc}.pill.hit{background:rgba(251,191,36,.18);color:#fcd34d}.pill.done{background:rgba(74,222,128,.18);color:#86efac}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tile{background:rgba(255,255,255,.045);border:1px solid var(--panel-b);border-radius:10px;padding:8px 9px;min-width:0}
+.tile.wide{grid-column:span 2}
+.tile .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.tile .v{font-size:21px;font-weight:750;margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tile .v small{font-size:11px;font-weight:600;color:var(--mut);margin-left:2px}
+.tile .s{font-size:10.5px;color:var(--dim);margin-top:1px;min-height:13px;font-variant-numeric:tabular-nums}
+.tile .s.better{color:var(--ok)}.tile .s.worse{color:var(--bad)}
+.bar{height:4px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:5px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+.tile.dam .bar i{background:var(--warn)}.tile.des .bar i{background:var(--bad)}
+#history{margin-top:8px;font-size:11px;color:var(--mut);display:none}
+#history.has{display:block}
+#history div.h{display:flex;justify-content:space-between;gap:6px;padding:3px 2px;border-top:1px solid var(--panel-b)}
+#history div.h b{color:var(--ink);font-weight:650}
+
+#hud{position:absolute;left:50%;top:14px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;pointer-events:none}
+#hud .chip{pointer-events:auto;background:var(--panel);border:1px solid var(--panel-b);border-radius:99px;padding:6px 13px;font-size:12px;font-weight:600;backdrop-filter:blur(12px);display:flex;gap:8px;align-items:center;white-space:nowrap}
+#hud .dot{width:8px;height:8px;border-radius:50%;background:var(--mut)}
+#hud .dot.run{background:var(--acc);box-shadow:0 0 0 4px rgba(56,189,248,.2);animation:pulse 1.4s infinite}
+#hud .dot.done{background:var(--ok)}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(56,189,248,0)}}
+#hud .t{font:600 12px ui-monospace,Consolas,monospace;color:var(--mut)}
+#viewbtn{pointer-events:auto;background:var(--panel);border:1px solid var(--panel-b);border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600}
+#viewbtn:hover{background:rgba(255,255,255,.12)}
+
+#intro{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:min(560px,calc(100% - 640px));min-width:340px;pointer-events:auto;text-align:center;padding:16px 20px 14px;transition:opacity .5s,transform .5s}
+#intro.hide{opacity:0;transform:translate(-50%,10px);pointer-events:none}
+#intro p{margin:0 0 10px;font-size:17px;font-weight:650;line-height:1.35;letter-spacing:-.005em}
+#intro .steps{display:flex;justify-content:center;gap:16px;font-size:11.5px;color:var(--mut);margin-bottom:11px}
+#intro .steps span b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--acc2);color:#04131d;font-size:10px;margin-right:5px}
+#intro button{background:var(--acc2);color:#04131d;border:0;border-radius:9px;padding:7px 18px;font-weight:700;font-size:12.5px}
+#footer{position:absolute;left:14px;bottom:12px;font-size:11px;color:rgba(255,255,255,.72);text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;line-height:1.5}
+#footer b{color:#fff;font-weight:650}
+#legend{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:none;pointer-events:none;align-items:center;gap:9px;font-size:11px;font-weight:600;padding:6px 12px;border-radius:99px;background:var(--panel);border:1px solid var(--panel-b)}
+#legend.on{display:flex}
+#legend .g{width:150px;height:8px;border-radius:4px;background:linear-gradient(90deg,#2a5cf2,#1ad1f2,#8cf266,#ffd940,#ff4729)}
+#tip{position:fixed;pointer-events:none;background:rgba(9,14,20,.94);border:1px solid var(--panel-b);border-radius:9px;padding:7px 10px;font-size:12px;line-height:1.4;display:none;z-index:5;max-width:220px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+#tip b{display:block;font-size:12.5px}#tip span{color:var(--mut)}
+#tip .st{display:inline-block;font-weight:700;font-size:11px;margin-top:2px}
+.st.i{color:var(--ok)}.st.d{color:var(--warn)}.st.x{color:var(--bad)}
+#toast{position:absolute;left:50%;top:62px;transform:translate(-50%,-8px);opacity:0;pointer-events:none;background:rgba(16,24,34,.95);border:1px solid var(--panel-b);border-radius:11px;padding:9px 16px;font-size:12.5px;font-weight:600;transition:all .3s;max-width:480px;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.bad{border-color:rgba(248,113,113,.6);color:#fecaca}#toast.good{border-color:rgba(74,222,128,.55)}
+
+@media (max-width:1100px){ #intro{width:min(520px,calc(100% - 40px));bottom:110px} }
+@media (max-width:820px){
+  #left{width:210px} #right{width:250px} .tile .v{font-size:18px} #footer{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="ui">
+  <aside id="left" class="panel">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#0e2a3d"/><path d="M4 21c3-4 6-4 9 0s6 4 9 0 6-4 8 0" fill="none" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round"/><path d="M4 26c3-3 6-3 9 0s6 3 9 0 6-3 8 0" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round" opacity=".6"/><path d="M11 15l6-6 6 6v3H11z" fill="#f1f5f9"/></svg>
+      <div><b>Coastal Flood Lab</b><span>Wave &amp; defense sandbox</span></div>
+    </div>
+    <h3>Defenses</h3>
+    <div id="tools">
+      <button class="tool" data-tool="select" title="Select, move, rotate or delete placed defenses (1)">
+        <span class="ico"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M5 3l10 6-4.4 1.3L8.6 15z" fill="#e8eef5"/></svg></span>
+        <span><b>Select</b><small>Pick &amp; drag defenses</small></span><kbd>1</kbd></button>
+      <button class="tool" data-tool="seawall" title="Seawall: tall continuous wall. Blocks water and causes build-up (2)">
+        <span class="ico"><svg width="30" height="22" viewBox="0 0 30 22"><rect x="3" y="4" width="24" height="10" fill="#c9cbcd"/><rect x="2" y="3" width="26" height="3" fill="#eceef0"/><path d="M0 17c4-3 7-3 10 0s6 3 10 0 7-3 10 0v5H0z" fill="#38bdf8" opacity=".8"/></svg></span>
+        <span><b>Seawall</b><small>Tall vertical wall</small></span><kbd>2</kbd></button>
+      <button class="tool" data-tool="breakwater" title="Breakwater: low rubble mound that absorbs wave energy (3)">
+        <span class="ico"><svg width="30" height="22" viewBox="0 0 30 22"><path d="M3 15l5-8h14l5 8z" fill="#8d8a84"/><path d="M8 7l3 3 4-3 4 3 3-3" stroke="#6d6a64" fill="none"/><path d="M0 15c4-2 7-2 10 0s6 2 10 0 7-2 10 0v7H0z" fill="#38bdf8" opacity=".8"/></svg></span>
+        <span><b>Breakwater</b><small>Low offshore rubble mound</small></span><kbd>3</kbd></button>
+      <button class="tool" data-tool="segmented" title="Segmented breakwater: separate blocks with gaps that let water through (4)">
+        <span class="ico"><svg width="30" height="22" viewBox="0 0 30 22"><path d="M1 14l2-6h5l2 6zM11 14l2-6h5l2 6zM21 14l2-6h5l2 6z" fill="#8d8a84"/><path d="M0 14c4-2 7-2 10 0s6 2 10 0 7-2 10 0v8H0z" fill="#38bdf8" opacity=".8"/></svg></span>
+        <span><b>Segmented Breakwater</b><small>Blocks with gaps</small></span><kbd>4</kbd></button>
+      <button class="tool" data-tool="embankment" title="Sloped embankment: wide earth ramp that dissipates energy and can be overtopped (5)">
+        <span class="ico"><svg width="30" height="22" viewBox="0 0 30 22"><path d="M2 19L14 6h4l9 13z" fill="#5a8f3d"/><path d="M2 19L14 6h-2L2 17z" fill="#9a968e"/></svg></span>
+        <span><b>Sloped Embankment</b><small>Wide dissipating ramp</small></span><kbd>5</kbd></button>
+    </div>
+    <div class="hint" id="toolHint"></div>
+    <div id="inspector"></div>
+    <div class="lockmsg" id="lockmsg">Defenses are locked while a wave is active. Press <b>Reset Simulation</b> to edit them.</div>
+    <div class="btnrow"><button class="btn danger" id="clearDef" title="Remove every placed defense">Clear Defenses</button></div>
+  </aside>
+
+  <div id="hud">
+    <div class="chip"><span class="dot" id="hudDot"></span><span id="hudStatus">Calm</span><span class="t" id="hudTime">t = 0.0 s</span></div>
+    <button id="viewbtn" title="Return to the default camera view">Reset View</button>
+  </div>
+
+  <aside id="right">
+    <section class="panel" id="wavePanel">
+      <h3>Wave</h3>
+      <div class="seg intensity" id="intensity" role="group" aria-label="Wave intensity">
+        <button data-k="moderate" title="Moderate wave: reaches the beach road">Moderate</button>
+        <button data-k="severe" title="Severe wave: floods the first rows of houses">Severe</button>
+        <button data-k="extreme" title="Extreme wave: can overtop defenses and flood the whole town">Extreme</button>
+      </div>
+      <div id="waveInfo"><span id="waveH">Offshore height 3.0 m</span><span class="meter" id="waveMeter" title="Relative wave energy"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <button class="primary" id="launch" title="Generate an offshore wave with the selected intensity (L)">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M1 13c2.5-4 5-4 7.5-1 1.5-4.5 4.500-7 9-6-2 1-3 3-3 5.500 0 2 1.200 3.500 3 4.500H1z" fill="#04131d"/></svg>
+        <span id="launchLabel">Launch Wave</span></button>
+      <div class="row2">
+        <button class="btn" id="pause" title="Pause or resume the simulation (Space)">Pause</button>
+        <button class="btn" id="reset" title="Restore terrain, buildings and water. Defenses stay in place. (Esc twice)">Reset Simulation</button>
+      </div>
+      <div class="lbl"><span>Simulation speed</span></div>
+      <div class="seg" id="speed" role="group" aria-label="Simulation speed">
+        <button data-k="0.5">0.5×</button><button data-k="1" class="on">1×</button><button data-k="2">2×</button>
+      </div>
+      <div class="switches">
+        <label class="sw" title="Visualize local water velocity with arrows (F)"><input type="checkbox" id="showFlow"><span class="knob"></span>Show Flow</label>
+        <label class="sw" title="Camera follows the wave front"><input type="checkbox" id="followWave"><span class="knob"></span>Follow Wave</label>
+      </div>
+    </section>
+
+    <section class="panel" id="results">
+      <div class="rhead"><h3>Results</h3><span class="pill" id="statusPill">Ready</span></div>
+      <div class="tiles">
+        <div class="tile"><div class="k">Maximum Flood Depth</div><div class="v"><span id="mDepth">0.0</span><small>m</small></div><div class="s" id="sDepth"></div></div>
+        <div class="tile"><div class="k">Flooded Area</div><div class="v"><span id="mArea">0</span><small>m²</small></div><div class="s" id="sArea"></div></div>
+        <div class="tile"><div class="k">Beach Erosion</div><div class="v"><span id="mEros">0</span><small>m³</small></div><div class="s" id="sEros"></div></div>
+        <div class="tile"><div class="k">Buildings Damaged</div><div class="v"><span id="mDam">0</span><small id="totDam">/ 22</small></div><div class="bar"><i id="bDam"></i></div><div class="s" id="sDam"></div></div>
+        <div class="tile wide des"><div class="k">Buildings Destroyed</div><div class="v"><span id="mDes">0</span><small id="totDes">/ 22</small></div><div class="bar"><i id="bDes"></i></div><div class="s" id="sDes"></div></div>
+      </div>
+      <div id="history"></div>
+    </section>
+  </aside>
+
+  <div id="intro" class="panel">
+    <p>Build coastal defenses, launch the wave, and see whether your town survives.</p>
+    <div class="steps"><span><b>1</b>Place defenses</span><span><b>2</b>Launch Wave</span><span><b>3</b>Inspect damage &amp; reset</span></div>
+    <button id="introBtn">Start building</button>
+  </div>
+  <div id="legend"><span>Flow speed</span><span>0</span><span class="g"></span><span>6+ m/s</span></div>
+  <div id="footer"><b>Drag</b> orbit · <b>Right-drag</b> pan · <b>Scroll</b> zoom · <b>Click</b> place · <b>R</b> rotate · <b>Del</b> remove</div>
+  <div id="toast"></div>
+  <div id="tip"></div>
+</div>
+<script src="dist/app.js"></script>
+</body>
+</html>

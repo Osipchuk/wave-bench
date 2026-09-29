@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coastal Defense Lab — Tsunami Simulation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<!-- Left control panel -->
+<aside id="panel">
+  <header class="panel-head">
+    <div class="logo"></div>
+    <div>
+      <h1>Coastal Defense Lab</h1>
+      <p class="sub">Shallow-water tsunami sandbox</p>
+    </div>
+  </header>
+
+  <section class="group">
+    <div class="group-title">Build defenses</div>
+    <div class="tools">
+      <button class="tool" data-tool="seawall" title="Tall continuous concrete wall. Blocks and reflects water; extreme waves may overtop it.">
+        <span class="icon icon-seawall"></span><span class="tool-name">Seawall</span><span class="tool-meta">crest +7.0 m</span>
+      </button>
+      <button class="tool" data-tool="breakwater" title="Low heavy offshore rubble mound. Absorbs wave energy without fully blocking flow.">
+        <span class="icon icon-breakwater"></span><span class="tool-name">Breakwater</span><span class="tool-meta">crest +2.0 m</span>
+      </button>
+      <button class="tool" data-tool="segmented" title="Several separated blocks. Water passes through the gaps, protected wakes form behind each block.">
+        <span class="icon icon-segmented"></span><span class="tool-name">Segmented Breakwater</span><span class="tool-meta">5 blocks, gaps</span>
+      </button>
+      <button class="tool" data-tool="embankment" title="Wide sloped earth embankment. Dissipates energy, allows partial overtopping.">
+        <span class="icon icon-embankment"></span><span class="tool-name">Sloped Embankment</span><span class="tool-meta">crest +4.0 m</span>
+      </button>
+    </div>
+    <div id="build-hint" class="hint">Pick a structure, move the ghost into the scene, click to place. <kbd>R</kbd> rotates, <kbd>Esc</kbd> cancels.</div>
+    <div id="selection" class="selection hidden">
+      <div class="sel-row"><span class="sel-label">Selected</span><span id="sel-name">Seawall</span></div>
+      <div class="sel-actions">
+        <button id="btn-rot-l" title="Rotate 15° counter-clockwise (Q)">⟲ Rotate</button>
+        <button id="btn-rot-r" title="Rotate 15° clockwise (E / R)">Rotate ⟳</button>
+        <button id="btn-delete" class="danger" title="Delete selected structure (Delete)">Delete</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-title">Wave intensity</div>
+    <div class="segmented" id="intensity">
+      <button data-int="moderate" title="Offshore wave height ≈ 2.0 m">Moderate</button>
+      <button data-int="severe" class="active" title="Offshore wave height ≈ 3.0 m">Severe</button>
+      <button data-int="extreme" title="Offshore wave height ≈ 4.8 m">Extreme</button>
+    </div>
+    <button id="btn-launch" class="primary">
+      <span class="wave-glyph"></span> Launch Wave
+    </button>
+    <div class="row">
+      <button id="btn-pause" title="Pause or resume the simulation clock">Pause</button>
+      <button id="btn-reset" title="Restore water, terrain, buildings and metrics. Defenses stay.">Reset Simulation</button>
+    </div>
+    <button id="btn-clear" class="ghost-btn" title="Remove all placed defenses">Clear Defenses</button>
+  </section>
+
+  <section class="group">
+    <div class="group-title">Simulation</div>
+    <div class="row-label"><span>Speed</span>
+      <div class="segmented small" id="speed">
+        <button data-speed="0.5">0.5×</button>
+        <button data-speed="1" class="active">1×</button>
+        <button data-speed="2">2×</button>
+      </div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="chk-flow"><span class="switch"></span><span>Show Flow</span></label>
+    <label class="toggle"><input type="checkbox" id="chk-follow"><span class="switch"></span><span>Follow Wave</span></label>
+  </section>
+
+  <footer class="panel-foot">
+    <div>Orbit: drag &nbsp;·&nbsp; Pan: right-drag &nbsp;·&nbsp; Zoom: wheel</div>
+    <div>Click a placed structure to select it.</div>
+  </footer>
+</aside>
+
+<!-- Metrics panel -->
+<aside id="metrics">
+  <div class="m-head">
+    <span class="m-title">Damage report</span>
+    <span id="m-state" class="badge ready">Ready</span>
+  </div>
+  <div class="m-grid">
+    <div class="m-item"><span class="m-label">Sim time</span><span class="m-value" id="m-time">0.0 s</span></div>
+    <div class="m-item"><span class="m-label">Wave</span><span class="m-value" id="m-wave">—</span></div>
+    <div class="m-item wide"><span class="m-label">Maximum Flood Depth</span><span class="m-value" id="m-depth">0.00 m</span><span class="m-sub" id="m-depth-now">now 0.00 m</span></div>
+    <div class="m-item wide"><span class="m-label">Flooded Area</span><span class="m-value" id="m-area">0 m²</span><span class="m-sub" id="m-area-now">now 0 m²</span></div>
+    <div class="m-item wide"><span class="m-label">Beach Erosion</span><span class="m-value" id="m-erosion">0 m³</span><span class="m-sub" id="m-erosion-max">max cut 0.00 m</span></div>
+    <div class="m-item"><span class="m-label">Buildings Damaged</span><span class="m-value" id="m-damaged">0 / 0</span></div>
+    <div class="m-item"><span class="m-label">Buildings Destroyed</span><span class="m-value" id="m-destroyed">0 / 0</span></div>
+  </div>
+  <div class="m-bar"><div id="m-health" class="m-fill"></div></div>
+  <div class="m-foot"><span>Town integrity</span><span id="m-health-txt">100%</span></div>
+</aside>
+
+<!-- Status bar -->
+<div id="status"><span id="status-text">Build coastal defenses, launch the wave, and see whether your town survives.</span></div>
+
+<!-- Onboarding -->
+<div id="onboard">
+  <div class="card">
+    <div class="card-icon"></div>
+    <h2>Build coastal defenses, launch the wave, and see whether your town survives.</h2>
+    <p>Place seawalls and breakwaters, choose a wave intensity, then press <strong>Launch Wave</strong>. The water is simulated live with shallow-water equations, so every barrier changes how the flood moves.</p>
+    <button id="btn-onboard">Start experimenting</button>
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div><div>Loading scene…</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
+<script src="sim.js"></script>
+<script src="world.js"></script>
+<script src="objects.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

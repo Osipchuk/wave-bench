@@ -1,0 +1,18 @@
+{
+  "name": "coastal-flood-lab",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test-sim.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "esbuild": "^0.28.2",
+    "three": "^0.186.1"
+  },
+  "type": "module"
+}

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coastal Flood Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <div id="viewport"></div>
+
+  <!-- SVG icon sprites -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.6L10 19z" fill="currentColor"/></symbol>
+      <symbol id="i-seawall" viewBox="0 0 32 24"><path d="M1 20c3-2 5-2 8 0" stroke="currentColor" fill="none" stroke-width="1.6" opacity=".6"/><rect x="12" y="3" width="6" height="18" rx="1" fill="currentColor"/><path d="M18 21h13" stroke="currentColor" stroke-width="1.6"/></symbol>
+      <symbol id="i-breakwater" viewBox="0 0 32 24"><path d="M1 13c3-2 5-2 8 0s5 2 8 0 5-2 8 0 4 2 6 0" stroke="currentColor" fill="none" stroke-width="1.6" opacity=".6"/><path d="M8 21l5-7h6l5 7z" fill="currentColor"/></symbol>
+      <symbol id="i-segmented" viewBox="0 0 32 24"><path d="M1 13c3-2 5-2 8 0s5 2 8 0 5-2 8 0 4 2 6 0" stroke="currentColor" fill="none" stroke-width="1.6" opacity=".6"/><path d="M1 21l3-5h4l3 5zM11 21l3-5h4l3 5zM21 21l3-5h4l3 5z" fill="currentColor"/></symbol>
+      <symbol id="i-embankment" viewBox="0 0 32 24"><path d="M1 21L13 8h6l12 13z" fill="currentColor"/><path d="M13 8h6" stroke="#7fe0a0" stroke-width="2"/></symbol>
+      <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 16c2.5 0 3.5-2 5-5s3-6 7-6c3 0 4.5 2 4.5 4-2-1.5-4.5-.5-4.5 2 0 2 2 3.5 4 3.5 1.5 0 2.5-.5 4-1.5v3c-2 2-4 3-6 3H2z" fill="currentColor"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M3 3v6h6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></symbol>
+      <symbol id="i-rotl" viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M4 3v5h5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-rotr" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M20 3v5h-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-flow" viewBox="0 0 24 24"><path d="M3 8h11l-3-3M3 16h14l-3-3M9 12h12l-3-3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-cam" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="currentColor"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5v.7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z" fill="currentColor"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- top bar -->
+  <header id="topbar" class="panel">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 24 24"><use href="#i-wave"/></svg>
+      <div>
+        <div class="brand-title">Coastal Flood Lab</div>
+        <div class="brand-sub">Real-time shallow-water tsunami simulator</div>
+      </div>
+    </div>
+    <div class="status">
+      <span id="statusDot" class="dot idle"></span>
+      <span id="statusText">Ready — build your defenses</span>
+    </div>
+    <div class="clock" title="Simulated time since launch"><span class="lbl">T+</span><span id="clock">00:00</span></div>
+    <button id="btnHelp" class="icon-btn" title="Show instructions"><svg><use href="#i-help"/></svg></button>
+  </header>
+
+  <!-- build panel -->
+  <aside id="buildPanel" class="panel">
+    <div class="panel-title">Coastal Defenses <span id="defCount" class="chip">0 placed</span></div>
+    <div id="tools" class="tools">
+      <button class="tool" data-tool="select" title="Select, move, rotate or delete placed defenses (Esc)">
+        <svg viewBox="0 0 24 24"><use href="#i-select"/></svg>
+        <div class="tool-text"><b>Select / Move</b><span>Click a defense to edit it</span></div>
+        <kbd>Esc</kbd>
+      </button>
+      <button class="tool" data-tool="seawall" title="Tall vertical wall. Blocks and reflects water; flow is diverted around its ends. Crest +9.5 m above sea level.">
+        <svg viewBox="0 0 32 24"><use href="#i-seawall"/></svg>
+        <div class="tool-text"><b>Seawall</b><span>96 m · crest +9.5 m · blocks</span></div>
+        <kbd>1</kbd>
+      </button>
+      <button class="tool" data-tool="breakwater" title="Low, heavy offshore rubble mound. Absorbs wave energy but lets water over. Place in the sea.">
+        <svg viewBox="0 0 32 24"><use href="#i-breakwater"/></svg>
+        <div class="tool-text"><b>Breakwater</b><span>56 m · crest +1.6 m · absorbs</span></div>
+        <kbd>2</kbd>
+      </button>
+      <button class="tool" data-tool="segmented" title="Detached offshore blocks with gaps. Water jets through the gaps and sheltered zones form behind blocks. Place in the sea.">
+        <svg viewBox="0 0 32 24"><use href="#i-segmented"/></svg>
+        <div class="tool-text"><b>Segmented Breakwater</b><span>4 blocks · 14 m gaps · diffracts</span></div>
+        <kbd>3</kbd>
+      </button>
+      <button class="tool" data-tool="embankment" title="Wide armoured dike with gentle slopes. Dissipates energy, can be overtopped.">
+        <svg viewBox="0 0 32 24"><use href="#i-embankment"/></svg>
+        <div class="tool-text"><b>Sloped Embankment</b><span>60 m · crest +6.0 m · dissipates</span></div>
+        <kbd>4</kbd>
+      </button>
+    </div>
+
+    <div id="rotateRow" class="row rotate-row">
+      <span class="muted">Orientation</span>
+      <div class="rot">
+        <button id="rotL" class="icon-btn sm" title="Rotate left 15° (Q)"><svg><use href="#i-rotl"/></svg></button>
+        <span id="angleLabel" class="mono">0°</span>
+        <button id="rotR" class="icon-btn sm" title="Rotate right 15° (E)"><svg><use href="#i-rotr"/></svg></button>
+      </div>
+    </div>
+
+    <div id="selPanel" class="sel hidden">
+      <div class="sel-head"><span class="sel-dot"></span><b id="selName">Seawall</b><span id="selAngle" class="mono muted">0°</span></div>
+      <div class="sel-actions">
+        <button id="selRotL" class="btn sm" title="Rotate left 15° (Q)"><svg><use href="#i-rotl"/></svg>Rotate</button>
+        <button id="selRotR" class="btn sm" title="Rotate right 15° (E)"><svg><use href="#i-rotr"/></svg>Rotate</button>
+        <button id="selDelete" class="btn sm danger" title="Delete (Del)"><svg><use href="#i-trash"/></svg>Delete</button>
+      </div>
+      <div class="muted tiny">Drag the highlighted defense to move it.</div>
+    </div>
+
+    <div id="lockNote" class="lock hidden">Defenses are locked while the wave is running. <b>Reset</b> to edit the layout.</div>
+
+    <button id="btnClear" class="btn ghost wide" title="Remove all placed defenses"><svg><use href="#i-trash"/></svg>Clear Defenses</button>
+  </aside>
+
+  <!-- metrics -->
+  <aside id="metricsPanel" class="panel">
+    <div class="panel-title">Impact Report <span id="runTag" class="chip">No run yet</span></div>
+    <div class="metrics">
+      <div class="metric" title="Deepest water recorded on originally dry land (excluding building footprints)"><div class="m-label">Maximum Flood Depth</div><div class="m-val"><span id="mDepth">0.0</span><small>m</small></div></div>
+      <div class="metric" title="Land area that was covered by more than 20 cm of water at any time"><div class="m-label">Flooded Area</div><div class="m-val"><span id="mArea">0.00</span><small>ha</small></div><div class="bar"><i id="mAreaBar"></i></div><div class="m-sub" id="mAreaSub">0% of land</div></div>
+      <div class="metric" title="Volume of sand and soil scoured by the flow (from the erodible sediment layer)"><div class="m-label">Beach Erosion</div><div class="m-val"><span id="mErosion">0</span><small>m³</small></div><div class="m-sub" id="mErosionSub">max scour 0.0 m</div></div>
+      <div class="metric" title="Buildings weakened by hydrodynamic load and exposure but still standing"><div class="m-label">Buildings Damaged</div><div class="m-val warn"><span id="mDamaged">0</span><small id="mTotal">/ 0</small></div></div>
+      <div class="metric" title="Buildings whose structural resistance was exceeded — they collapse into debris"><div class="m-label">Buildings Destroyed</div><div class="m-val bad"><span id="mDestroyed">0</span></div></div>
+      <div class="metric half" title="Highest simulated water surface above sea level over the sea"><div class="m-label">Peak Wave Height</div><div class="m-val sm"><span id="mPeak">0.0</span><small>m</small></div></div>
+      <div class="metric half" title="Furthest inland distance from the shoreline reached by floodwater"><div class="m-label">Inundation Reach</div><div class="m-val sm"><span id="mReach">0</span><small>m</small></div></div>
+    </div>
+    <div class="panel-title sub">Experiment Log</div>
+    <div id="log" class="log"><div class="log-empty">Runs appear here so you can compare layouts.</div></div>
+  </aside>
+
+  <!-- control dock -->
+  <div id="dock" class="panel">
+    <div class="group">
+      <div class="glabel">Wave Intensity</div>
+      <div id="intensity" class="seg">
+        <button data-preset="moderate">Moderate</button>
+        <button data-preset="severe" class="on">Severe</button>
+        <button data-preset="extreme">Extreme</button>
+      </div>
+      <div id="presetInfo" class="tiny muted">Offshore height 3.8 m · long-period</div>
+    </div>
+    <button id="btnLaunch" class="launch" title="Launch the wave (Space)"><svg><use href="#i-wave"/></svg><span id="launchText">Launch Wave</span></button>
+    <div class="group">
+      <div class="glabel">Simulation</div>
+      <div class="btn-row">
+        <button id="btnPause" class="btn" title="Pause / Resume (P)"><svg><use href="#i-pause"/></svg><span>Pause</span></button>
+        <button id="btnReset" class="btn" title="Reset water, terrain and town (R)"><svg><use href="#i-reset"/></svg><span>Reset Simulation</span></button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="glabel">Speed</div>
+      <div id="speed" class="seg">
+        <button data-speed="0.5">0.5×</button>
+        <button data-speed="1" class="on">1×</button>
+        <button data-speed="2">2×</button>
+      </div>
+    </div>
+    <div class="group">
+      <div class="glabel">View</div>
+      <div class="btn-row">
+        <button id="btnFlow" class="toggle" title="Show local water velocity arrows (F)"><svg><use href="#i-flow"/></svg><span>Show Flow</span></button>
+        <button id="btnFollow" class="toggle" title="Camera follows the wave front"><svg><use href="#i-cam"/></svg><span>Follow Wave</span></button>
+        <button id="btnHome" class="icon-btn" title="Reset camera view (H)"><svg><use href="#i-home"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="legend" class="panel hidden">
+    <div class="tiny muted">Flow speed</div>
+    <div class="grad"></div>
+    <div class="grad-l"><span>0</span><span>3</span><span>6</span><span>9+ m/s</span></div>
+  </div>
+
+  <div id="hints" class="tiny">
+    <span><kbd>Left-drag</kbd> orbit</span><span><kbd>Right-drag</kbd> pan</span><span><kbd>Wheel</kbd> zoom</span>
+    <span><kbd>Q</kbd>/<kbd>E</kbd> or <kbd>Shift</kbd>+<kbd>Wheel</kbd> rotate</span><span><kbd>Del</kbd> delete</span>
+  </div>
+  <div id="perf" class="tiny mono"></div>
+
+  <div id="toast"></div>
+  <div id="cursorTip" class="hidden"></div>
+
+  <div id="onboard" class="overlay">
+    <div class="card">
+      <div class="card-icon"><svg viewBox="0 0 24 24"><use href="#i-wave"/></svg></div>
+      <h1>Coastal Flood Lab</h1>
+      <p class="lead">Build coastal defenses, launch the wave, and see whether your town survives.</p>
+      <ol class="steps">
+        <li><div><b>Build</b><span>Pick a defense on the left and click the map to place it. <kbd>Q</kbd>/<kbd>E</kbd> rotates.</span></div></li>
+        <li><div><b>Launch</b><span>Choose an intensity and press <b>Launch Wave</b>. The water is simulated live.</span></div></li>
+        <li><div><b>Compare</b><span>Reset, change the layout and run the same wave again.</span></div></li>
+      </ol>
+      <button id="btnStart" class="launch">Start</button>
+    </div>
+  </div>
+
+  <div id="loading" class="overlay"><div class="spinner"></div><div class="tiny muted">Generating coastline…</div></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "note": "Extracted from the Claude Code session transcripts of each one-shot run. Cost is an estimate at list API prices (cache writes billed at 1.25x input).",
+  "runs": [
+    {"dir": "fable5.1",  "model": "Claude Fable 5.1",  "id": "claude-fable-5-1",  "effort": "medium", "active_min": 41.0, "wall_min": 48.9, "input_tokens": 2468, "output_tokens": 172924, "cache_read_tokens": 13452183, "cache_write_tokens": 190273, "cost_usd": 14.41},
+    {"dir": "opus5.5",   "model": "Claude Opus 5.5",   "id": "claude-opus-5-5",   "effort": "medium", "active_min": 72.2, "wall_min": 77.2, "input_tokens": 270,  "output_tokens": 259556, "cache_read_tokens": 39664379, "cache_write_tokens": 355735, "cost_usd": 14.90},
+    {"dir": "sonnet5",   "model": "Claude Sonnet 5",   "id": "claude-sonnet-5",   "effort": "high",   "active_min": 38.1, "wall_min": 46.4, "input_tokens": 366,  "output_tokens": 157172, "cache_read_tokens": 40309719, "cache_write_tokens": 256127, "cost_usd": 10.27},
+    {"dir": "sonnet5.5", "model": "Claude Sonnet 5.5", "id": "claude-sonnet-5-5", "effort": "high",   "active_min": 37.9, "wall_min": 45.8, "input_tokens": 234,  "output_tokens": 216112, "cache_read_tokens": 29213598, "cache_write_tokens": 305503, "cost_usd": 8.77}
+  ]
+}

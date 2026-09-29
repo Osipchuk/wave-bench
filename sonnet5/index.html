@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coastal Flood &amp; Tsunami Simulator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="viewport"></div>
+
+  <div id="instructionBanner" class="banner">
+    <span>Build coastal defenses, launch the wave, and see whether your town survives.</span>
+    <button id="bannerClose" aria-label="Dismiss">&times;</button>
+  </div>
+
+  <div id="titleBar">
+    <div class="titleMain">Coastal Flood Simulator</div>
+    <div class="titleSub">Real-time shallow-water engineering sandbox</div>
+  </div>
+
+  <div id="leftPanel" class="panel">
+    <div class="panelHeader">Build Defenses</div>
+    <div class="toolGrid">
+      <button class="toolBtn active" data-tool="select" title="Select and edit placed structures">
+        <span class="toolIcon">&#9668;&#9658;</span><span>Select</span>
+      </button>
+      <button class="toolBtn" data-tool="seawall" title="Tall continuous wall — strongly blocks water">
+        <span class="toolIcon">&#9608;&#9608;</span><span>Seawall</span>
+      </button>
+      <button class="toolBtn" data-tool="breakwater" title="Low offshore structure — absorbs wave energy">
+        <span class="toolIcon">&#9617;&#9617;</span><span>Breakwater</span>
+      </button>
+      <button class="toolBtn" data-tool="segmented" title="Gapped blocks — water flows through openings">
+        <span class="toolIcon">&#9612; &#9612;</span><span>Segmented</span>
+      </button>
+      <button class="toolBtn" data-tool="embankment" title="Wide sloped defense — dissipates energy">
+        <span class="toolIcon">&#9651;</span><span>Embankment</span>
+      </button>
+    </div>
+
+    <div class="hint" id="placeHint">Select a defense, then click the terrain to place it. Press Q/E to rotate.</div>
+
+    <div class="rowBtns">
+      <button id="rotateLeft" class="miniBtn" title="Rotate left (Q)">&#8634;</button>
+      <button id="rotateRight" class="miniBtn" title="Rotate right (E)">&#8635;</button>
+      <button id="deleteSelected" class="miniBtn danger" title="Delete selected structure (Del)">Delete</button>
+    </div>
+
+    <button id="clearDefenses" class="fullBtn subtle">Clear Defenses</button>
+  </div>
+
+  <div id="rightPanel" class="panel">
+    <div class="panelHeader">Wave Intensity</div>
+    <div class="pillGroup" id="intensityGroup">
+      <button class="pill active" data-intensity="moderate">Moderate</button>
+      <button class="pill" data-intensity="severe">Severe</button>
+      <button class="pill" data-intensity="extreme">Extreme</button>
+    </div>
+
+    <button id="launchWave" class="fullBtn primary">Launch Wave</button>
+
+    <div class="panelHeader spaced">Playback</div>
+    <div class="rowBtns">
+      <button id="pauseResume" class="miniBtn wide">Pause</button>
+      <button id="resetSim" class="miniBtn wide">Reset</button>
+    </div>
+    <div class="pillGroup" id="speedGroup">
+      <button class="pill" data-speed="0.5">0.5&times;</button>
+      <button class="pill active" data-speed="1">1&times;</button>
+      <button class="pill" data-speed="2">2&times;</button>
+    </div>
+
+    <div class="panelHeader spaced">Visualization</div>
+    <label class="toggleRow">
+      <input type="checkbox" id="showFlow">
+      <span>Show Flow</span>
+    </label>
+    <label class="toggleRow">
+      <input type="checkbox" id="followWave">
+      <span>Follow Wave</span>
+    </label>
+
+    <div class="panelHeader spaced">Live Metrics</div>
+    <div class="metrics">
+      <div class="metricRow"><span>Max Flood Depth</span><b id="mFloodDepth">0.00 m</b></div>
+      <div class="metricRow"><span>Flooded Area</span><b id="mFloodArea">0 m&sup2;</b></div>
+      <div class="metricRow"><span>Beach Erosion</span><b id="mErosion">0%</b></div>
+      <div class="metricRow"><span>Buildings Damaged</span><b id="mDamaged">0</b></div>
+      <div class="metricRow"><span>Buildings Destroyed</span><b id="mDestroyed">0</b></div>
+    </div>
+  </div>
+
+  <div id="statusBar"></div>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

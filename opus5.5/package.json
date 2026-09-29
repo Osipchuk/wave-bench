@@ -1,0 +1,11 @@
+{
+  "name": "coastal-flood-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Real-time 3D coastal flood / tsunami simulation sandbox",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node tools/acceptance.mjs"
+  }
+}
