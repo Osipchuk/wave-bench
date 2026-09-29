@@ -20,3 +20,11 @@ Reading it:
 
 Caveats: one machine, two runs, no screen recording running. Sonnet 5.5 and Opus 5.5 take about twice as long to load (5.7 s and 6.1 s vs 2.5 s); I did not profile why (Sonnet 5.5 ships a 675 KB bundle, Opus 5.5 uses ES modules and a Web Worker).
 Fable 5.1 loads three.js from a CDN, so it needs internet. Per-run numbers are in [perf/results.json](perf/results.json).
+
+## Real-world note: MacBook Pro 2019 (Intel, Retina)
+
+The measurements above were taken on a desktop at device pixel ratio 1. On a 2019 Intel MacBook Pro the author found that only **Sonnet 5.5** ran without lag; the other three stuttered.
+
+Likely reason (from the code, not profiled on that machine): on a Retina screen (DPR 2) the other builds render at up to 1.6x (Fable 5.1), 1.75x (Opus 5.5) or 2x (Sonnet 5) pixel ratio with 2048px soft shadow maps and no fallback, which is 2.5-4x the pixels for an integrated GPU.
+Sonnet 5.5 is the only one with an adaptive quality drop: after ~120 frames, if the smoothed frame time exceeds 34 ms it lowers the pixel ratio to 1 (`sonnet5.5/src/main.js`, `qualityDropped`).
+So the desktop ranking (Sonnet 5 fastest) does not hold on weak or high-DPI hardware, where robustness to slow GPUs matters more than raw solver speed.
