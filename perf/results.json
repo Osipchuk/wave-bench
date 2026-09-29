@@ -1,0 +1,274 @@
+{
+ "fable": [
+  {
+   "key": "fable",
+   "run": "1",
+   "loadMs": 2252,
+   "mem": {
+    "used": 14.096393585205078,
+    "total": 30.37110137939453
+   },
+   "idle": {
+    "fps": 83.7,
+    "p50ms": 9.2,
+    "p95ms": 32.3,
+    "p99ms": 44.3,
+    "maxMs": 55,
+    "framesOver50ms": 2,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 70.7,
+    "p50ms": 12.2,
+    "p95ms": 33.4,
+    "p99ms": 47.6,
+    "maxMs": 298,
+    "framesOver50ms": 27,
+    "longTasks": 27,
+    "longTaskMs": 2103
+   },
+   "mainThreadBusyIdle": 99,
+   "mainThreadBusyWave": 100,
+   "domNodes": 2284,
+   "jsHeapMB": 7
+  },
+  {
+   "key": "fable",
+   "run": "2",
+   "loadMs": 2665,
+   "mem": {
+    "used": 12.947135925292969,
+    "total": 22.62110137939453
+   },
+   "idle": {
+    "fps": 81.3,
+    "p50ms": 8.9,
+    "p95ms": 38.7,
+    "p99ms": 43.1,
+    "maxMs": 54,
+    "framesOver50ms": 2,
+    "longTasks": 1,
+    "longTaskMs": 57
+   },
+   "wave": {
+    "fps": 65.4,
+    "p50ms": 13.2,
+    "p95ms": 37.4,
+    "p99ms": 52.1,
+    "maxMs": 302,
+    "framesOver50ms": 42,
+    "longTasks": 35,
+    "longTaskMs": 2550
+   },
+   "mainThreadBusyIdle": 97,
+   "mainThreadBusyWave": 100,
+   "domNodes": 1514,
+   "jsHeapMB": 7
+  }
+ ],
+ "opus": [
+  {
+   "key": "opus",
+   "run": "1",
+   "loadMs": 5740,
+   "mem": {
+    "used": 89.25506019592285,
+    "total": 109.7715015411377
+   },
+   "idle": {
+    "fps": 109.8,
+    "p50ms": 8.8,
+    "p95ms": 13.3,
+    "p99ms": 15.8,
+    "maxMs": 31,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 25.2,
+    "p50ms": 33,
+    "p95ms": 75.4,
+    "p99ms": 94.2,
+    "maxMs": 218,
+    "framesOver50ms": 190,
+    "longTasks": 204,
+    "longTaskMs": 12878
+   },
+   "mainThreadBusyIdle": 99,
+   "mainThreadBusyWave": 100,
+   "domNodes": 771,
+   "jsHeapMB": 25
+  },
+  {
+   "key": "opus",
+   "run": "2",
+   "loadMs": 6453,
+   "mem": {
+    "used": 91.59681129455566,
+    "total": 110.74948310852051
+   },
+   "idle": {
+    "fps": 100.5,
+    "p50ms": 9.4,
+    "p95ms": 14.2,
+    "p99ms": 26.3,
+    "maxMs": 32,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 25.6,
+    "p50ms": 39.5,
+    "p95ms": 59.5,
+    "p99ms": 71.2,
+    "maxMs": 151,
+    "framesOver50ms": 162,
+    "longTasks": 120,
+    "longTaskMs": 7131
+   },
+   "mainThreadBusyIdle": 99,
+   "mainThreadBusyWave": 101,
+   "domNodes": 828,
+   "jsHeapMB": 28
+  }
+ ],
+ "s5": [
+  {
+   "key": "s5",
+   "run": "1",
+   "loadMs": 2591,
+   "mem": {
+    "used": 10.02660846710205,
+    "total": 26.571297645568848
+   },
+   "idle": {
+    "fps": 102,
+    "p50ms": 9.5,
+    "p95ms": 14.2,
+    "p99ms": 17.8,
+    "maxMs": 22,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 103.3,
+    "p50ms": 9.1,
+    "p95ms": 15,
+    "p99ms": 18.8,
+    "maxMs": 36,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "mainThreadBusyIdle": 99,
+   "mainThreadBusyWave": 100,
+   "domNodes": 4680,
+   "jsHeapMB": 14
+  },
+  {
+   "key": "s5",
+   "run": "2",
+   "loadMs": 2407,
+   "mem": {
+    "used": 8.214348793029785,
+    "total": 26.821297645568848
+   },
+   "idle": {
+    "fps": 123.2,
+    "p50ms": 8,
+    "p95ms": 11.1,
+    "p99ms": 13.7,
+    "maxMs": 15,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 112.5,
+    "p50ms": 8.5,
+    "p95ms": 13,
+    "p99ms": 16.4,
+    "maxMs": 36,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "mainThreadBusyIdle": 100,
+   "mainThreadBusyWave": 100,
+   "domNodes": 1695,
+   "jsHeapMB": 13
+  }
+ ],
+ "s55": [
+  {
+   "key": "s55",
+   "run": "1",
+   "loadMs": 5822,
+   "mem": {
+    "used": 20.484304428100586,
+    "total": 37.370962142944336
+   },
+   "idle": {
+    "fps": 123.2,
+    "p50ms": 7.3,
+    "p95ms": 13.6,
+    "p99ms": 16.6,
+    "maxMs": 20,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 48.5,
+    "p50ms": 19.6,
+    "p95ms": 40.7,
+    "p99ms": 54.4,
+    "maxMs": 155,
+    "framesOver50ms": 39,
+    "longTasks": 30,
+    "longTaskMs": 1880
+   },
+   "mainThreadBusyIdle": 98,
+   "mainThreadBusyWave": 100,
+   "domNodes": 538,
+   "jsHeapMB": 13
+  },
+  {
+   "key": "s55",
+   "run": "2",
+   "loadMs": 5480,
+   "mem": {
+    "used": 20.897308349609375,
+    "total": 35.870967864990234
+   },
+   "idle": {
+    "fps": 130.9,
+    "p50ms": 6.9,
+    "p95ms": 12.4,
+    "p99ms": 17.7,
+    "maxMs": 42,
+    "framesOver50ms": 0,
+    "longTasks": 0,
+    "longTaskMs": 0
+   },
+   "wave": {
+    "fps": 64,
+    "p50ms": 15,
+    "p95ms": 31.2,
+    "p99ms": 41.5,
+    "maxMs": 96,
+    "framesOver50ms": 5,
+    "longTasks": 7,
+    "longTaskMs": 483
+   },
+   "mainThreadBusyIdle": 98,
+   "mainThreadBusyWave": 100,
+   "domNodes": 1014,
+   "jsHeapMB": 14
+  }
+ ]
+}
