@@ -1,19 +1,22 @@
-import {chromium} from 'playwright'; import fs from 'fs'; import {APPS} from './apps.mjs';
-const key=process.argv[2]; const A=APPS[key]; const PRE=8000, RUN=75000;
+import {chromium} from 'playwright'; import {RIG,INSTALL} from './cam.mjs'; import fs from 'fs'; import {APPS} from './apps.mjs';
+const key=process.argv[2]; const A=APPS[key]; const PRE=8000, RUN=75000; const IMP=process.argv[3]?+process.argv[3]:null;
 const dir=`frames_${key}`; fs.rmSync(dir,{recursive:true,force:true}); fs.mkdirSync(dir);
 const b=await chromium.launch({channel:'chrome',headless:false,args:['--enable-webgl','--ignore-gpu-blocklist','--disable-renderer-backgrounding','--disable-background-timer-throttling','--disable-backgrounding-occluded-windows']});
 const p=await (await b.newContext({viewport:{width:1600,height:900}})).newPage();
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
+if(key==='s5') await p.addInitScript(fs.readFileSync('hook.js','utf8'));
 await p.goto(`http://localhost:${A.port}/`);await p.waitForTimeout(3000);
 await p.click(A.intro).catch(()=>{});await p.waitForTimeout(1000);
-await p.click(A.severe);await p.click(A.seawall);
+await p.click(A.extreme);await p.click(A.seawall);
 await p.mouse.move(750,560);await p.mouse.move(800,560,{steps:5});await p.waitForTimeout(400);
-await p.mouse.click(800,560);await p.waitForTimeout(500);await p.mouse.move(1000,880);await p.waitForTimeout(500);
+await p.mouse.click(800,560);await p.waitForTimeout(500);await p.keyboard.press('Escape');await p.mouse.move(150,720);await p.waitForTimeout(500);
+await p.evaluate(`(${INSTALL})(${JSON.stringify(RIG[key])})`);
+await p.evaluate(`window.__L=null;window.__IMP=${IMP};(function f(){let s=0;if(window.__L&&window.__IMP!=null){const t=(Date.now()-window.__L)/1000-(window.__IMP-4);s=Math.max(0,Math.min(1,t/6));s=s*s*(3-2*s);}window.__pose(s);requestAnimationFrame(f)})()`);
 const cdp=await p.context().newCDPSession(p); const frames=[];let n=0;
 cdp.on('Page.screencastFrame',async f=>{const t=f.metadata.timestamp*1000;const name=`${dir}/${String(n++).padStart(6,'0')}.jpg`;fs.writeFileSync(name,Buffer.from(f.data,'base64'));frames.push({name,t});cdp.send('Page.screencastFrameAck',{sessionId:f.sessionId}).catch(()=>{});});
 await cdp.send('Page.startScreencast',{format:'jpeg',quality:92,maxWidth:1600,maxHeight:900,everyNthFrame:1});
 await p.waitForTimeout(PRE);
-await p.click(A.launch); const L=Date.now();
+await p.click(A.launch); const L=Date.now(); await p.evaluate(`window.__L=${L}`);
 const poll=[];const end=Date.now()+RUN;
 while(Date.now()<end){try{const tx=await p.evaluate(()=>document.body.innerText);const m=/flood\s*depth\D*?([\d.]+)/i.exec(tx);poll.push([Date.now(),m?parseFloat(m[1]):null]);}catch(e){}await p.waitForTimeout(150);}
 await cdp.send('Page.stopScreencast');

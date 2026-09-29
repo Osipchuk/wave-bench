@@ -1,6 +1,6 @@
 import json,subprocess,os
-A=12.0;AFTER=45.0;D=A+AFTER
-IMPACT={'fable':19.762,'opus':14.283,'s5':7.709,'s55':6.076}
+A=12.0;AFTER=50.0;D=A+AFTER
+IMPACT={"fable": 17.99, "opus": 14.105, "s5": 6.856, "s55": 5.579}
 T=[('fable','Claude Fable 5.1','effort medium','41 min','13.8M tokens (173K out)','$14.41'),
    ('opus','Claude Opus 5.5','effort medium','72 min','40.3M tokens (260K out)','$14.90'),
    ('s5','Claude Sonnet 5','effort high','38 min','40.7M tokens (157K out)','$10.27'),
@@ -43,7 +43,7 @@ for i,(k,name,eff,tm,tok,cost) in enumerate(T):
       f"drawtext=fontfile=arialbd.ttf:text='Impact in %{{eif\:ceil({A}-t)\:d}}s':x={x+W-330}:y={ty+22}:fontsize=42:fontcolor=0xf0b429:enable='lt(t\,{A})',"
       f"drawtext=fontfile=arialbd.ttf:text='Impact +%{{eif\:floor(t-{A})\:d}}s':x={x+W-330}:y={ty+22}:fontsize=42:fontcolor=0xff6b6b:enable='gte(t\,{A})'[p{i}]")
     prev=f'p{i}'
-fc.append(f"[{prev}]drawtext=fontfile=arialbd.ttf:text='One prompt, four models, one pass each  -  identical scenario - Severe wave + Seawall placed at the same click, default camera':x=(w-text_w)/2:y=16:fontsize=36:fontcolor=white,"
+fc.append(f"[{prev}]drawtext=fontfile=arialbd.ttf:text='One prompt, four models, one pass each  -  identical scenario - EXTREME wave + Seawall at the same click, same camera angle':x=(w-text_w)/2:y=16:fontsize=36:fontcolor=white,"
           f"drawtext=fontfile=arial.ttf:text='Footer = what each model spent to BUILD the app in one shot (Claude Code)  -  synced at the moment the flood reaches the shore':x=(w-text_w)/2:y=58:fontsize=22:fontcolor=0x8b949e[out]")
 open('fc.txt','w').write(';\n'.join(fc))
 subprocess.run(['ffmpeg','-y','-loglevel','error',*inputs,'-filter_complex_script','fc.txt','-map','[out]','-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p','../wave_bench_comparison.mp4'],check=True)
