@@ -1,0 +1,45 @@
+{
+  "note": "Site metadata for each build. Run numbers live in ../results.json; this file says what ships and how to describe it. `ship` is copied verbatim into dist/builds/<dir>/; `source` is what counts as the model's own code (vendored three.js and bundles excluded).",
+  "models": [
+    {
+      "dir": "opus5.5",
+      "app": "Coastal Flood Lab",
+      "grid": [240, 200],
+      "cell_m": 2,
+      "solver": "MAC-grid shallow water, semi-Lagrangian momentum, Flather offshore boundary",
+      "notes": "Solver runs in a Web Worker and streams snapshots to the renderer. Sediment is carried with the flow and settles where it slows; floating cars and debris can hit buildings.",
+      "ship": ["index.html", "css", "js", "vendor"],
+      "source": ["index.html", "css", "js", "tools"]
+    },
+    {
+      "dir": "fable5.1",
+      "app": "Coastal Defense Lab",
+      "grid": [160, 160],
+      "cell_m": 2,
+      "solver": "Staggered-grid shallow water, upwind advection, wet/dry fronts, wave maker",
+      "notes": "Plain scripts, no build step; three.js comes from cdnjs. Optional flow arrows and a camera that follows the wave crest.",
+      "ship": ["index.html", "style.css", "sim.js", "world.js", "objects.js", "main.js"],
+      "source": ["index.html", "style.css", "sim.js", "world.js", "objects.js", "main.js"]
+    },
+    {
+      "dir": "sonnet5.5",
+      "app": "Coastal Flood Lab",
+      "grid": [160, 140],
+      "cell_m": null,
+      "solver": "Inertial shallow water on a staggered grid, implicit Manning friction, flux limiting",
+      "notes": "Bundled with esbuild into one script. Damage metrics are compared against the previous run.",
+      "ship": ["index.html", "dist"],
+      "source": ["index.html", "src", "build.mjs", "test-sim.mjs", "dbg.mjs", "dbg2.mjs", "prof2.mjs"]
+    },
+    {
+      "dir": "sonnet5",
+      "app": "Coastal Flood Simulator",
+      "grid": [120, 100],
+      "cell_m": 1,
+      "solver": "Virtual-pipes flux scheme with outflow clamping and sponge boundaries",
+      "notes": "The only run that left no README. A stable pipe model rather than a momentum solver: depth can never go negative, whatever the wave.",
+      "ship": ["index.html", "style.css", "js", "vendor"],
+      "source": ["index.html", "style.css", "js", "server.js"]
+    }
+  ]
+}

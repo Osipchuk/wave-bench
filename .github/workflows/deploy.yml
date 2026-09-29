@@ -1,0 +1,68 @@
+name: Deploy
+
+# Builds the site and ships dist/ to the Cloudflare Pages project "wave-bench", served at
+# https://wave-bench.evgenyosipchuk.com (its own origin, so the blog that frames it at
+# evgenyosipchuk.com/demos/wave-bench/ stays isolated from it). Same pattern as the blog
+# and spectral-loom.
+#
+# Required secrets (the same two the blog uses):
+#   CLOUDFLARE_API_TOKEN  — token with "Account → Cloudflare Pages → Edit"
+#   CLOUDFLARE_ACCOUNT_ID — Cloudflare account ID
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # No dependencies: the site generator is plain Node, and the builds ship as committed.
+      - name: Build
+        run: npm run build
+
+      - name: Sanity-check dist/
+        run: |
+          set -euo pipefail
+          for f in index.html stats/index.html prompt/index.html _headers 404.html; do test -f "dist/$f"; done
+          for d in fable5.1 opus5.5 sonnet5 sonnet5.5; do
+            test -f "dist/play/$d/index.html"
+            test -f "dist/builds/$d/index.html"
+          done
+          grep -q "frame-ancestors" dist/_headers
+          if grep -lq "<style\|style=\"" dist/index.html dist/stats/index.html dist/prompt/index.html dist/play/*/index.html; then
+            echo "FAIL: inline styles on a hub page would be blocked by its CSP."
+            exit 1
+          fi
+
+      # First run only: create the Pages project if it doesn't exist yet.
+      - name: Ensure Pages project
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create wave-bench --production-branch=main
+        continue-on-error: true
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=wave-bench --branch=main

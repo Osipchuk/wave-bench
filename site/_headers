@@ -1,0 +1,30 @@
+# Cloudflare Pages response headers for wave-bench.evgenyosipchuk.com.
+#
+# Two layers. The site-wide policy is what the model builds under /builds/* need, and they
+# are shipped unedited: inline <style> blocks and style attributes (Sonnet 5.5), an inline
+# import map (Opus 5.5), three.js from cdnjs (Fable 5.1), Google Fonts (Opus 5.5), a module
+# Web Worker (Opus 5.5). The hub pages add a second, strict policy on top: when two CSP
+# headers apply, the browser enforces both, so there only 'self' scripts and styles run.
+#
+# frame-ancestors: the hub frames the builds ('self'), and the blog frames the hub; a
+# nested frame needs every ancestor listed (localhost is the blog's dev server).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self' https://evgenyosipchuk.com https://www.evgenyosipchuk.com http://localhost:4321 http://127.0.0.1:4321
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000
+
+/
+  Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
+/play/*
+  Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
+/stats/*
+  Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
+/prompt/*
+  Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

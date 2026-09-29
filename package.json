@@ -1,0 +1,10 @@
+{
+  "name": "wave-bench-site",
+  "private": true,
+  "type": "module",
+  "description": "Builds the Wave Bench site (hub, player, stats) into dist/ for Cloudflare Pages.",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "preview": "node scripts/serve.mjs"
+  }
+}
