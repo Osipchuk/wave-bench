@@ -1,5 +1,5 @@
 import {chromium} from 'playwright'; import fs from 'fs'; import {APPS} from './apps.mjs';
-const key=process.argv[2]; const A=APPS[key]; const PRE=3000, RUN=55000;
+const key=process.argv[2]; const A=APPS[key]; const PRE=8000, RUN=75000;
 const dir=`frames_${key}`; fs.rmSync(dir,{recursive:true,force:true}); fs.mkdirSync(dir);
 const b=await chromium.launch({channel:'chrome',headless:false,args:['--enable-webgl','--ignore-gpu-blocklist','--disable-renderer-backgrounding','--disable-background-timer-throttling','--disable-backgrounding-occluded-windows']});
 const p=await (await b.newContext({viewport:{width:1600,height:900}})).newPage();
@@ -14,7 +14,8 @@ cdp.on('Page.screencastFrame',async f=>{const t=f.metadata.timestamp*1000;const 
 await cdp.send('Page.startScreencast',{format:'jpeg',quality:92,maxWidth:1600,maxHeight:900,everyNthFrame:1});
 await p.waitForTimeout(PRE);
 await p.click(A.launch); const L=Date.now();
-await p.waitForTimeout(RUN);
+const poll=[];const end=Date.now()+RUN;
+while(Date.now()<end){try{const tx=await p.evaluate(()=>document.body.innerText);const m=/flood\s*depth\D*?([\d.]+)/i.exec(tx);poll.push([Date.now(),m?parseFloat(m[1]):null]);}catch(e){}await p.waitForTimeout(150);}
 await cdp.send('Page.stopScreencast');
-fs.writeFileSync(`frames_${key}.json`,JSON.stringify({frames,L,pre:PRE,run:RUN,errs}));
+fs.writeFileSync(`frames_${key}.json`,JSON.stringify({frames,poll,L,pre:PRE,run:RUN,errs}));
 console.log(key,frames.length,'frames',errs.slice(0,3));await b.close();
