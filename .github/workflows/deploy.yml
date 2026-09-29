@@ -40,13 +40,13 @@ jobs:
       - name: Sanity-check dist/
         run: |
           set -euo pipefail
-          for f in index.html stats/index.html prompt/index.html _headers 404.html; do test -f "dist/$f"; done
+          for f in index.html stats/index.html performance/index.html prompt/index.html _headers 404.html; do test -f "dist/$f"; done
           for d in fable5.1 opus5.5 sonnet5 sonnet5.5; do
             test -f "dist/play/$d/index.html"
             test -f "dist/builds/$d/index.html"
           done
           grep -q "frame-ancestors" dist/_headers
-          if grep -lq "<style\|style=\"" dist/index.html dist/stats/index.html dist/prompt/index.html dist/play/*/index.html; then
+          if grep -lq "<style\|style=\"" dist/index.html dist/stats/index.html dist/performance/index.html dist/prompt/index.html dist/play/*/index.html; then
             echo "FAIL: inline styles on a hub page would be blocked by its CSP."
             exit 1
           fi

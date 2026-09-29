@@ -12,7 +12,7 @@
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self' https://evgenyosipchuk.com https://www.evgenyosipchuk.com http://localhost:4321 http://127.0.0.1:4321
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=()
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
   Strict-Transport-Security: max-age=31536000
@@ -24,6 +24,8 @@
 /stats/*
   Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
 /prompt/*
+  Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
+/performance/*
   Content-Security-Policy: script-src 'self'; style-src 'self'; font-src 'self'
 
 /fonts/*

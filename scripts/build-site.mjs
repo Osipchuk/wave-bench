@@ -62,6 +62,29 @@ const runs = results.runs.map((run) => {
   };
 });
 
+// Performance benchmark (perf/perf.mjs, see PERFORMANCE.md): two runs per build, averaged.
+const PERF_KEYS = { fable: "fable5.1", opus: "opus5.5", s5: "sonnet5", s55: "sonnet5.5" };
+const perfRaw = JSON.parse(readFileSync(join(ROOT, "perf", "results.json"), "utf8"));
+const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+for (const [key, list] of Object.entries(perfRaw)) {
+  const r = runs.find((x) => x.dir === PERF_KEYS[key]);
+  if (!r) throw new Error(`perf/results.json: unknown key ${key}`);
+  const avg = (f) => mean(list.map(f));
+  r.perf = {
+    runs: list.length,
+    fps_idle: avg((x) => x.idle.fps),
+    fps_wave: avg((x) => x.wave.fps),
+    p50_ms: avg((x) => x.wave.p50ms),
+    p99_ms: avg((x) => x.wave.p99ms),
+    worst_ms: Math.max(...list.map((x) => x.wave.maxMs)),
+    slow_frames: avg((x) => x.wave.framesOver50ms),
+    long_task_s: avg((x) => x.wave.longTaskMs) / 1000,
+    load_s: avg((x) => x.loadMs) / 1000,
+    heap_mb: avg((x) => x.jsHeapMB),
+  };
+}
+const hasPerf = runs.every((r) => r.perf);
+
 // ---------- formatting ----------
 
 const esc = (s) =>
@@ -82,6 +105,7 @@ function page({ title, description = DESCRIPTION, active, body, bodyClass = "" }
   const nav = [
     ["builds", "/", "Builds"],
     ["stats", "/stats/", "Stats"],
+    ["performance", "/performance/", "Performance"],
     ["prompt", "/prompt/", "Prompt"],
   ]
     .map(
@@ -163,7 +187,8 @@ const home = page({
 <section class="cards">
 ${runs.map(card).join("\n")}
 </section>
-<p class="more"><a href="/stats/">Compare the runs: time, tokens, cost, code →</a></p>`,
+<p class="more"><a href="/stats/">Compare the runs: time, tokens, cost, code →</a><br>
+<a href="/performance/">Frame rate, stutters and load time →</a></p>`,
 });
 
 // ---------- player ----------
@@ -201,12 +226,14 @@ const METRICS = [
   { key: "cells", label: "Simulation grid", unit: "cells", fmt: int },
 ];
 
+/** One small-multiple panel: a bar per build on a shared scale. `m.get` reads the value. */
 function chart(m) {
-  const max = Math.max(...runs.map((r) => r[m.key]));
+  const get = m.get ?? ((r) => r[m.key]);
+  const max = Math.max(...runs.map(get)) || 1;
   const rows = runs
     .map((r) => {
-      const pct = ((r[m.key] / max) * 100).toFixed(2);
-      const value = m.fmt(r[m.key]);
+      const pct = ((get(r) / max) * 100).toFixed(2);
+      const value = m.fmt(get(r));
       return `<div class="bar-row">
       <span class="bar-label">${esc(shortName(r.model))}</span>
       <svg class="bar-track" role="img" aria-label="${esc(`${r.model}: ${value}`)}"><title>${esc(`${r.model}: ${value}`)}</title><rect width="${pct}%" height="100%" rx="3"></rect></svg>
@@ -218,6 +245,17 @@ function chart(m) {
     <figcaption><b>${m.label}</b><span>${m.unit}</span></figcaption>
     ${rows}
   </figure>`;
+}
+
+function table(rowsSpec) {
+  return `<div class="scroll">
+  <table>
+    <thead><tr><th scope="col"></th>${runs.map((r) => `<th scope="col"><a href="/play/${r.dir}/">${esc(shortName(r.model))}</a></th>`).join("")}</tr></thead>
+    <tbody>
+${rowsSpec.map(([label, f]) => `      <tr><th scope="row">${label}</th>${runs.map((r) => `<td>${f(r)}</td>`).join("")}</tr>`).join("\n")}
+    </tbody>
+  </table>
+  </div>`;
 }
 
 const TABLE = [
@@ -250,14 +288,7 @@ ${METRICS.map(chart).join("\n")}
 </section>
 <section class="table-wrap">
   <h2>All numbers</h2>
-  <div class="scroll">
-  <table>
-    <thead><tr><th scope="col"></th>${runs.map((r) => `<th scope="col"><a href="/play/${r.dir}/">${esc(shortName(r.model))}</a></th>`).join("")}</tr></thead>
-    <tbody>
-${TABLE.map(([label, f]) => `      <tr><th scope="row">${label}</th>${runs.map((r) => `<td>${f(r)}</td>`).join("")}</tr>`).join("\n")}
-    </tbody>
-  </table>
-  </div>
+  ${table(TABLE)}
 </section>
 <section class="notes">
   <h2>How these were measured</h2>
@@ -271,6 +302,71 @@ ${TABLE.map(([label, f]) => `      <tr><th scope="row">${label}</th>${runs.map((
     some background-monitor notifications. Neither run got any additional guidance.</li>
     <li>Effort differs: Fable 5.1 and Opus 5.5 ran at medium, both Sonnets at high.</li>
   </ul>
+</section>`,
+});
+
+// ---------- performance ----------
+
+const fps = (n) => `${Math.round(n)} fps`;
+const ms = (n) => `${Math.round(n)} ms`;
+const sec = (n) => `${n.toFixed(1)} s`;
+
+const PERF_METRICS = [
+  { label: "FPS during the wave", unit: "higher is better", get: (r) => r.perf.fps_wave, fmt: fps },
+  { label: "Frames over 50 ms", unit: "visible stutters, lower is better", get: (r) => r.perf.slow_frames, fmt: (n) => int(Math.round(n)) },
+  { label: "Worst frame", unit: "longest freeze, lower is better", get: (r) => r.perf.worst_ms, fmt: ms },
+  { label: "Load time", unit: "to the load event, lower is better", get: (r) => r.perf.load_s, fmt: sec },
+];
+
+const PERF_TABLE = [
+  ["Solver runs on", (r) => esc(r.thread)],
+  ["Simulation grid", (r) => `${r.grid.join(" × ")} · ${int(r.cells)} cells`],
+  ["FPS idle", (r) => fps(r.perf.fps_idle)],
+  ["FPS during the wave", (r) => fps(r.perf.fps_wave)],
+  ["Frame time p50 / p99", (r) => `${Math.round(r.perf.p50_ms)} / ${Math.round(r.perf.p99_ms)} ms`],
+  ["Worst frame", (r) => ms(r.perf.worst_ms)],
+  ["Frames over 50 ms", (r) => int(Math.round(r.perf.slow_frames))],
+  ["Long-task time", (r) => sec(r.perf.long_task_s)],
+  ["Load time", (r) => sec(r.perf.load_s)],
+  ["JS heap", (r) => `${Math.round(r.perf.heap_mb)} MB`],
+];
+
+const perfPage = page({
+  title: "Performance",
+  description: "Frame rate, stutters and load time of the four builds under the same Extreme wave.",
+  active: "performance",
+  body: `<section class="hero">
+  <div class="eyebrow">performance · same scenario on every build</div>
+  <h1>How smoothly each one runs.</h1>
+  <p class="dek">Extreme wave against a seawall, 1600×900, desktop Chrome with a GPU: six seconds idle, then
+  fifty seconds of the wave. Two runs per build, averaged. The frame limiter is off, so FPS shows headroom,
+  not what a 60 Hz screen displays.</p>
+</section>
+<section class="charts">
+${PERF_METRICS.map(chart).join("\n")}
+</section>
+<section class="table-wrap">
+  <h2>All numbers</h2>
+  ${table(PERF_TABLE)}
+</section>
+<section class="notes">
+  <h2>Reading it</h2>
+  <ul>
+    <li><strong>Sonnet 5</strong> is the fastest and smoothest, but it also has the smallest grid: 12k cells,
+    half of Sonnet 5.5 and a quarter of Opus 5.5, so its water is the coarsest.</li>
+    <li><strong>Fable 5.1</strong> holds 65–70 FPS but stutters when the wave hits, with frames up to 300 ms.</li>
+    <li><strong>Sonnet 5.5</strong> sits in between, with occasional hitches and large run-to-run variance.</li>
+    <li><strong>Opus 5.5</strong> has the largest grid and the heaviest visuals. The solver runs in a Web Worker,
+    yet rendering still drops to about 25 FPS during the wave. It is also the slowest to load.</li>
+    <li>All four stay usable after the Extreme wave; nothing crashed or blew up numerically.</li>
+  </ul>
+  <h2>On a laptop it's a different story</h2>
+  <p class="notes-p">On a 2019 Intel MacBook Pro with a Retina screen, only <strong>Sonnet 5.5</strong> ran without lag.
+  It is the only build that lowers its own quality: when frames stay slower than about 34 ms, it drops the pixel
+  ratio to 1. The other three render at 1.6–2× pixel ratio with 2048 px shadow maps and no fallback, which is
+  2.5–4 times the pixels for an integrated GPU. So the desktop ranking doesn't hold on weaker or high-DPI hardware.</p>
+  <p class="notes-p">Caveats: one desktop, two runs per build, measured with Playwright from
+  <code>requestAnimationFrame</code> timings and the long-task observer.</p>
 </section>`,
 });
 
@@ -339,6 +435,7 @@ for (const name of ["_headers", "404.html", "favicon.svg", "robots.txt", "assets
 write("index.html", home);
 write("stats/index.html", stats);
 write("prompt/index.html", prompt);
+if (hasPerf) write("performance/index.html", perfPage);
 for (const r of runs) {
   write(`play/${r.dir}/index.html`, player(r));
   for (const p of r.ship) cpSync(join(ROOT, r.dir, p), join(OUT, "builds", r.dir, p), { recursive: true });
